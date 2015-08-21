@@ -100,19 +100,31 @@ def Test-m_get_file_data
 
     mu_find_file common.funcs FUT
     sed 's/\(m_fail .*\)/\1 || return 1/g' "${FUT}" > "${MU_TMP}/common.funcs"
+    #======================================
     ## Overwrite previous import
+    #======================================
     import "common.funcs"
     import m_fail_record_failure
 
+    #======================================
     ## Wrong arg count
+    #======================================
     m_get_file_data "1" "2" "3" "4" "5" "6" "7" "8" && raise_failure "Failed to trap arg count error"
+    #======================================
     ## Min depth non numeric
+    #======================================
     m_get_file_data -s -min "wibble" -max 2 "m_test1_dirs" > /dev/null && raise_failure "Failed to trap non numeric min"
+    #======================================
     ## Max depth non numeric
+    #======================================
     m_get_file_data -s -min 1 -max "wibble" "m_test1_dirs" > /dev/null && raise_failure "Failed to trap non numeric min"
+    #======================================
     ## Unrecognised option
+    #======================================
     m_get_file_data -wibble -min 1 -max 2 "m_test1_dirs" > /dev/null && raise_failure "Failed to trap unrecognised option"
+    #======================================
     ## Non directory 
+    #======================================
     m_get_file_data -s -min 1 -max 2 "/var/log/messages" > /dev/null && raise_failure "Failed to trap non directory"
 
     #======================================
@@ -168,15 +180,23 @@ def Test-m_get_md5sum
 
     mu_find_file common.funcs FUT
     sed 's/\(m_fail .*\)/\1 || return 1/g' "${FUT}" > "${MU_TMP}/common.funcs"
+    #======================================
     ## Overwrite previous import
+    #======================================
     import "common.funcs"
     import m_fail_record_failure
 
+    #======================================
     ## Arg count error
+    #======================================
     m_get_md5sum m_get_md5sum.txt && raise_failure "Failed to trap incorrect arg count"
+    #======================================
     ## Empty string arg 1
+    #======================================
     m_get_md5sum "" 2 && raise_failure "Failed to trap empty string arg[1]"
+    #======================================
     ## MUSE var expected
+    #======================================
     m_get_md5sum m_get_md5sum.txt md && raise_failure "Failed to trap for MUSE var name"
 
     #======================================
@@ -222,7 +242,9 @@ def Test-m_check_file
 
     mu_find_file common.funcs FUT
     sed 's/\(m_fail .*\)/\1 || return 1/g' "${FUT}" > "${MU_TMP}/common.funcs"
+    #======================================
     ## Overwrite previous import
+    #======================================
     import "common.funcs"
     import m_fail_record_failure
     
@@ -272,7 +294,9 @@ def Test-m_get_usr_tag
     #======================================
     ## Ensure we return a fail code from test m_fail
     sed 's/\(m_fail .*\)/\1 || return 1/g' "${FUT}" > "${MU_TMP}/common.funcs"
+    #======================================
     ## Overwrite previous import
+    #======================================
     import "common.funcs"
     import m_fail_record_failure
     
@@ -286,13 +310,19 @@ def Test-m_get_usr_tag
     #======================================
     # Negative tests to for failure paths
     #======================================
+    #======================================
     ## mkdir failures
+    #======================================
     echo "blocking" > /tmp/m_get_usr_tag
     m_get_usr_tag && raise_failure "Failed to detect block on mkdir"
+    #======================================
     ## Fail because multiline tag
+    #======================================
     echo "secondline" >> "${TFILE}"
     m_get_usr_tag && raise_failure "Failed to detect multiline tag file"
+    #======================================
     ## Empty tag file failure
+    #======================================
     :>"${TFILE}"
     m_get_usr_tag && raise_failure "m_get_usr_tag failed to trap empty tag file"
     #======================================
@@ -335,15 +365,23 @@ def Test-m_get_exp_file
     import common.funcs
     import m_fail_record_failure
     
+    #======================================
     ## Rig test version of m_fail
+    #======================================
     mu_get_exp_file m_get_exp_file FAIL
     export M_FAIL="${FAIL}"
 
+    #======================================
     ## Arg count
+    #======================================
     m_get_exp_file Test-m_get_exp_file && raise_failure "Failed to trap incorrect arg count"
+    #======================================
     ## Arg one empty string
+    #======================================
     m_get_exp_file "" EXPFILE && raise_failure "Failed to trap empty string arg 1"
+    #======================================
     ## Non MUSE var name in $2
+    #======================================
     m_get_exp_file Test-m_get_exp_file expfile && raise_failure "Failed to trap non MUSE name for var"
 
     mu_find_file m_get_exp_file.exp EXP
@@ -383,20 +421,32 @@ def Test-m_get_unique_tmp_file
     import common.funcs
     import m_fail_record_failure
 
+    #======================================
     ## Rig test version of m_fail
+    #======================================
     mu_get_exp_file m_get_unique_tmp_file FAIL
     export M_FAIL="${FAIL}"
 
+    #======================================
     ## Arg count
+    #======================================
     m_get_unique_tmp_file Test-m_get_unique_tmp_file && raise_failure "Failed to trap invalid arg count"
+    #======================================
     ## Empty string $1
+    #======================================
     m_get_unique_tmp_file "" TMPFILE && raise_failure "Failed to trap empty string in arg 1"
+    #======================================
     ## Invalid var name in $2
+    #======================================
     m_get_unique_tmp_file Test-m_get_unique_tmp_file tmpfile && raise_failure "Failed to trap invlaid var name in arg 2"
+    #======================================
     ## M_TMP not set 
+    #======================================
     export M_TMP=
     m_get_unique_tmp_file Test-m_get_unique_tmp_file TMPFILE && raise_failure "Failed to trap M_TMP not set"
+    #======================================
     ## Fail to write to new tmp file
+    #======================================
     export M_TMP="/"
     m_get_unique_tmp_file Test-m_get_unique_tmp_file TMPFILE 2>/dev/null && raise_failure "Failed to trap failure to write"
 
@@ -437,20 +487,32 @@ def Test-m_get_tmp_file
     import common.funcs
     import m_fail_record_failure
 
+    #======================================
     ## Rig test version of m_fail
+    #======================================
     mu_get_exp_file m_get_tmp_file FAIL
     export M_FAIL="${FAIL}"
 
+    #======================================
     ## Arg count
+    #======================================
     m_get_tmp_file Test-m_get_unique_tmp_file && raise_failure "Failed to trap invalid arg count"
+    #======================================
     ## Empty string $1
+    #======================================
     m_get_tmp_file "" TMPFILE && raise_failure "Failed to trap empty string in arg 1"
+    #======================================
     ## Invalid var name in $2
+    #======================================
     m_get_tmp_file Test-m_get_tmp_file tmpfile && raise_failure "Failed to trap invlaid var name in arg 2"
+    #======================================
     ## M_TMP not set 
+    #======================================
     export M_TMP=
     m_get_tmp_file Test-m_get_tmp_file TMPFILE && raise_failure "Failed to trap M_TMP not set"
+    #======================================
     ## Fail to write to new tmp file
+    #======================================
     export M_TMP="/"
     m_get_tmp_file Test-m_get_tmp_file TMPFILE 2>/dev/null && raise_failure "Failed to trap failure to write"
 
@@ -492,17 +554,27 @@ def Test-m_get_tmp_dir
     import common.funcs
     import m_fail_record_failure
 
+    #======================================
     ## Rig test version of m_fail
+    #======================================
     mu_get_exp_file m_get_tmp_dir FAIL
     export M_FAIL="${FAIL}"
 
+    #======================================
     ## Incorrect arg count
+    #======================================
     m_get_tmp_dir Test-m_get_tmp_dir && raise_failure "Failed to trap incorrect arg count"
+    #======================================
     ## Empty string $1
+    #======================================
     m_get_tmp_dir "" DIR  && raise_failure "Failed to trap empty arg[1]"
+    #======================================
     ## Invalid var name
+    #======================================
     m_get_tmp_dir Test-m_get_tmp_dir tmpdir && raise_failure "Failed to trap invalid arg[2]"
+    #======================================
     ## Failed to create dir
+    #======================================
     export M_TMP="/"
     m_get_tmp_dir Test-m_get_tmp_dir DIR 2>/dev/null && raise_failure "Failed to trap Failure to create dir"
 
@@ -534,14 +606,18 @@ def Test-m_clean_file
     #======================================
     # Run the positive tests
     #======================================
+    #======================================
     ## Write new clean version of src file
+    #======================================
     mu_find_file m_clean_file.src SRC
     mu_get_exp_file m_clean_file CLF
     m_clean_file "${SRC}" "${CLF}"
     mu_find_file m_clean_file.exp EXP
     assert_is_not_different "${EXP}" "${CLF}"
 
+    #======================================
     ## Overwrite SRC file with clean version
+    #======================================
     TSRC="${MU_TMP}/Test-m_clean_file.src"
     cp "${SRC}" "${TSRC}" || raise_error "Failed to copy src file (${SRC}) to dst dir (${TSRC})"
     m_clean_file "${TSRC}" "${TSRC}"
@@ -555,20 +631,28 @@ def Test-m_clean_file
     import common.funcs
     import m_fail_record_failure
 
+    #======================================
     ## Rig test version of m_fail
+    #======================================
     mu_get_exp_file Test-m_clean_file FAIL
     export M_FAIL="${FAIL}"
 
     #======================================
     # Src abd dst same file
     #======================================
+    #======================================
     ## Arg count
+    #======================================
     cp "${SRC}" "${TSRC}" || raise_error "Failed to copy src file (${SRC}) to dst dir (${TSRC})"
     m_clean_file "${TSRC}" && raise_failure "Failed to trap incorrect arg count"
+    #======================================
     ## Fail file perms check read
+    #======================================
     chmod -r "${TSRC}"
     m_clean_file "${TSRC}" "${TSRC}" 2>/dev/null && raise_failure "Failed to trap perms invalid"
+    #======================================
     ## Fail file perms check write
+    #======================================
     chmod +r "${TSRC}"
     chmod -w "${TSRC}"
     m_clean_file "${TSRC}" "${TSRC}" 2>/dev/null && raise_failure "Failed to trap perms invalid"
@@ -576,13 +660,17 @@ def Test-m_clean_file
     #======================================
     # Src and dst different
     #======================================
+    #======================================
     ## Fail file perms check read
+    #======================================
     TMP="${MU_TMP}/Test-m_clean_file.tmp"
     cp "${SRC}" "${TMP}" || raise_error "Failed to copy src file (${SRC}) to dst dir (${TSRC})"
     chmod -r "${TSRC}"
     chmod +w "${TMP}"
     m_clean_file "${TSRC}" "${TMP}" 2>/dev/null && raise_failure "Failed to trap perms invalid"
+    #======================================
     ## Fail file perms check write
+    #======================================
     chmod +r "${TSRC}"
     chmod -w "${TMP}"
     m_clean_file "${TSRC}" "${TMP}" 2>/dev/null && raise_failure "Failed to trap perms invalid"
@@ -627,12 +715,107 @@ def Test-m_new_outbound_msg
     export M_DB_FILE="${MU_TMP}/master.db"
     export M_DB="${SQL3} ${M_DB_FILE}"
     export M_DB_RETRY=50
-    
+    export M_MSG_OUT_BUFFER="${MU_TMP}/msgout"
+    export M_MSG_OUT_PENDING="${MU_TMP}/msgpen"
+
+    mkdir "${M_MSG_OUT_BUFFER}" || raise_error "Failed to create msg out buffer (${M_MSG_OUT_BUFFER})"
+    mkdir "${M_MSG_OUT_PENDING}" || raise_error "Failed to create msg out buffer (${M_MSG_OUT_PENDING})"
+
     #======================================
-    # Run the positive tests
+    # Run the positive test
     #======================================
     m_new_outbound_msg "1" "123456789" "1" "2" "server.src" "server.dst" "TEST" "PL" "OUTBOUND" "NEW" "8441bbc0b0573b183bc62dee5966fdc1" MSG_ID
+    assert_is_integer "${MSG_ID}" "Failed to retrieve MSG ID from master db"
+    assert_file_exists "${M_MSG_OUT_PENDING}/server.dst_1.msg" "Failed to find msg file in pending directory"
 
+    #======================================
+    # Negative Tests
+    #======================================
+    mu_find_file common.funcs FUT
+    sed 's/\(m_fail .*\)/\1 || return 1/g' "${FUT}" > "${MU_TMP}/common.funcs"
+    import common.funcs
+    import m_fail_record_failure
+
+    #======================================
+    ## Rig test version of m_fail
+    #======================================
+    mu_get_exp_file Test-m_new_outbound_msg FAIL
+    export M_FAIL="${FAIL}"
+
+    #======================================
+    # Incorrect arg count
+    #======================================
+    m_new_outbound_msg "123456789" "1" "2" "server.src" "server.dst" "TEST" "PL" "OUTBOUND" "NEW" "8441bbc0b0573b183bc62dee5966fdc1" MSG_ID &&
+        raise_failure "Failed to trap incorrect arg count"
+    #======================================
+    # Invalid time stamp
+    #======================================
+    m_new_outbound_msg "1" "wibble" "1" "2" "server.src" "server.dst" "TEST" "PL" "OUTBOUND" "NEW" "8441bbc0b0573b183bc62dee5966fdc1" MSG_ID &&
+        raise_failure "Failed to trap invalid timestamp"
+    #======================================
+    # Invalid thread ID
+    #======================================
+    m_new_outbound_msg "1" "123456789" "A" "2" "server.src" "server.dst" "TEST" "PL" "OUTBOUND" "NEW" "8441bbc0b0573b183bc62dee5966fdc1" MSG_ID &&
+        raise_failure "Failed to trap invalid thread ID"
+
+    #======================================
+    # Invalid Priority
+    #======================================
+    m_new_outbound_msg "1" "123456789" "1" "" "server.src" "server.dst" "TEST" "PL" "OUTBOUND" "NEW" "8441bbc0b0573b183bc62dee5966fdc1" MSG_ID &&
+        raise_failure "Failed to trap invalid Priority"
+
+    #======================================
+    # Invalid source server
+    #======================================
+    m_new_outbound_msg "1" "123456789" "1" "2" "" "server.dst" "TEST" "PL" "OUTBOUND" "NEW" "8441bbc0b0573b183bc62dee5966fdc1" MSG_ID &&
+        raise_failure "Failed to trap invalid source server"
+    #======================================
+    # Invalid dst server
+    #======================================
+    m_new_outbound_msg "1" "123456789" "1" "2" "server.src" "" "TEST" "PL" "OUTBOUND" "NEW" "8441bbc0b0573b183bc62dee5966fdc1" MSG_ID &&
+        raise_failure "Failed to trap invalid dest server"
+
+    #======================================
+    # Invalid action flag
+    #======================================
+    m_new_outbound_msg "1" "123456789" "1" "2" "server.src" "server.dst" "test" "PL" "OUTBOUND" "NEW" "8441bbc0b0573b183bc62dee5966fdc1" MSG_ID &&
+        raise_failure "Failed to trap invalid Action flag"
+
+    #======================================
+    # Invalid Payload
+    #======================================
+    m_new_outbound_msg "1" "123456789" "1" "2" "server.src" "server.dst" "TEST" "" "OUTBOUND" "NEW" "8441bbc0b0573b183bc62dee5966fdc1" MSG_ID &&
+        raise_failure "Failed to trap invalid Payload"
+
+    #======================================
+    # Invalid Direction
+    #======================================
+    m_new_outbound_msg "1" "123456789" "1" "2" "server.src" "server.dst" "TEST" "PL" "outbound" "NEW" "8441bbc0b0573b183bc62dee5966fdc1" MSG_ID &&
+        raise_failure "Failed to trap invalid Direction"
+
+    #======================================
+    # Invalid Status
+    #======================================
+    m_new_outbound_msg "1" "123456789" "1" "2" "server.src" "server.dst" "TEST" "PL" "OUTBOUND" "NeW" "8441bbc0b0573b183bc62dee5966fdc1" MSG_ID &&
+        raise_failure "Failed to trap invalid Status"
+
+    #======================================
+    # Invalid Session ID
+    #======================================
+    m_new_outbound_msg "1" "123456789" "1" "2" "server.src" "server.dst" "TEST" "PL" "OUTBOUND" "NEW" "" MSG_ID &&
+        raise_failure "Failed to trap invalid Session ID"
+
+    #======================================
+    # Invladie Return Var
+    #======================================
+    m_new_outbound_msg "1" "123456789" "1" "2" "server.src" "server.dst" "TEST" "PL" "OUTBOUND" "NEW" "8441bbc0b0573b183bc62dee5966fdc1" mSG_ID &&
+        raise_failure "Failed to trap invalid Return Variable"
+
+    #======================================
+    # Check we have the correct err msgs
+    #======================================
+    mu_find_file m_new_outbound_msg.exp EXP
+    assert_is_not_different "${EXP}" "${FAIL}"
 
 end
 

@@ -27,6 +27,28 @@
 
 ##############################################################
 ##
+## Name         :   assert_is_integer
+## Author       :   Bradley Atkins
+## Description  :   Test arg is an integer
+## Date         :   21/08/2015
+## Args         :   1 - <reference integer>
+##                  2 - [Err msg]
+## Status       :   Reviewed    [n]
+##                  Tested      [n]
+##                  Released    [n]
+##                  Disabled    [n]
+##############################################################
+assert_is_integer()
+{
+    mu_set_assertions ${THIS_TEST_NAME}
+    [[ "${1}" =~ ^[[:digit:]]+$ ]] && return 0
+
+    mu_set_failures ${THIS_TEST_NAME}
+    printf "%s\n%s\n\n" "Expected (${1}) to be an integer" "${3}"
+    
+} >> "${MU_RPT}/${THIS_TEST_NAME}.rpt"
+##############################################################
+##
 ## Name         :   assert_equal_integer
 ## Author       :   Bradley Atkins
 ## Description  :   Test two integers for equality
