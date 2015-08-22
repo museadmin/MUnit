@@ -1,0 +1,15 @@
+##############################################################
+##
+## Name         :   m_update_file.src
+## Author       :   Bradley Atkins
+## Description  :   Source file for testing m_update_file
+## Date         :   22/08/2015
+## Args         :   
+## Status       :   Reviewed    [n]
+##                  Tested      [n]
+##                  Released    [n]
+##############################################################
+LINE_12="Wibble"
+Line_13="Wobble"
+line_14="New Value"
+

@@ -17,7 +17,7 @@
 # Confirm we have all of our libraries 
 # installed
 #======================================
-def Test-RequireAllLibraries-Pass
+def Test-RequireAllLibraries
     require_regular_file "db.funcs"
     require_regular_file "print.funcs"
     require_regular_file "cnxn.funcs"
@@ -34,7 +34,7 @@ end
 #======================================
 # Confirm all env files present
 #======================================
-def Test-RequireAllEnvFiles-Pass
+def Test-RequireAllEnvFiles
     require_regular_file "msg.env"
     require_regular_file "master.env"
     require_regular_file "slave.env"

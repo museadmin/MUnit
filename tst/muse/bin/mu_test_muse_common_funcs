@@ -584,8 +584,8 @@ def Test-m_get_tmp_dir
     #======================================
     assert_is_not_different <(head -n3 "${EXP}") <(head -n3 "${FAIL}")
 
-    assert_left_match_for_string < <(tail -n1 "${EXP}") \
-        "Call to m_fail with code (2) and msg (Error: Failed to create tmp directory"
+    REFSTR="Call to m_fail with code (2) and msg (Error: Failed to create tmp directory"
+    assert_left_match_for_string "${REFSTR}" "$(tail -n1 "${EXP}")" 
 
     [[ -f "${MU_TMP}/common.funcs" ]] && rm -f "${MU_TMP}/common.funcs"
 end
@@ -681,6 +681,8 @@ def Test-m_clean_file
     #======================================
     mu_find_file m_clean_file_2.exp EXP2
     assert_is_not_different "${EXP2}" "${FAIL}"
+    
+    [[ -f "${MU_TMP}/common.funcs" ]] && rm -f "${MU_TMP}/common.funcs"
 end
 
 #======================================
@@ -699,12 +701,12 @@ def Test-m_new_outbound_msg
     require_file master.db
     require_file m_fail_record_failure
     require_file m_fail_raise_error
+    require_file m_new_outbound_msg.exp
     import m_fail_raise_error
     import common.funcs
     import comm.funcs
     import db.funcs
 
-    export M_TMP="${MU_TMP}"
 
     #======================================
     # Get a copy of the master db
@@ -712,11 +714,16 @@ def Test-m_new_outbound_msg
     mu_find_file master.db MUDB
     cp "${MUDB}" "${MU_TMP}"
     mu_find_file sqlite3 SQL3
+    
+    #======================================
+    # Rig the environment for the FUT
+    #======================================
     export M_DB_FILE="${MU_TMP}/master.db"
     export M_DB="${SQL3} ${M_DB_FILE}"
     export M_DB_RETRY=50
     export M_MSG_OUT_BUFFER="${MU_TMP}/msgout"
     export M_MSG_OUT_PENDING="${MU_TMP}/msgpen"
+    export M_TMP="${MU_TMP}"
 
     mkdir "${M_MSG_OUT_BUFFER}" || raise_error "Failed to create msg out buffer (${M_MSG_OUT_BUFFER})"
     mkdir "${M_MSG_OUT_PENDING}" || raise_error "Failed to create msg out buffer (${M_MSG_OUT_PENDING})"
@@ -817,6 +824,139 @@ def Test-m_new_outbound_msg
     mu_find_file m_new_outbound_msg.exp EXP
     assert_is_not_different "${EXP}" "${FAIL}"
 
+    [[ -f "${MU_TMP}/common.funcs" ]] && rm -f "${MU_TMP}/common.funcs"
 end
+#======================================
+# Function updates a line in a file
+# Either by line No or pattern
+#======================================
+def Test-m_update_file
 
+    #======================================
+    # Requires and Imports / Exports
+    #======================================
+    require_file common.funcs
+    require_file m_fail_record_failure
+    require_file m_fail_raise_error
+    require_file m_update_file.src
+    require_file m_update_file_12.exp
+    require_file m_update_file_13.exp
+    require_file m_update_file_14.exp
+    import m_fail_raise_error
+    import common.funcs
 
+    export M_TMP="${MU_TMP}"
+    mu_find_file m_update_file.src SRC
+    mu_find_file m_update_file_12.exp EXP12
+    mu_find_file m_update_file_13.exp EXP13
+    mu_find_file m_update_file_14.exp EXP14
+
+    #======================================
+    # Positive Tests
+    #======================================
+
+    #======================================
+    # Update file by line No
+    #======================================
+    mu_get_tmp_file Test-m_update_file TMP
+    cp "${SRC}" "${TMP}" || raise_error "Copy failed 1"
+    m_update_file "${TMP}" 12 1 'LINE_12="New Value"'
+    assert_is_not_different "${TMP}" "${EXP12}"
+    #======================================
+    # Update by pattern
+    #======================================
+    cp "${SRC}" "${TMP}" || raise_error "Copy failed 2"
+    m_update_file "${TMP}" 'LINE_12' 2 'LINE_12="New Value"'
+    assert_is_not_different "${TMP}" "${EXP12}"
+    #======================================
+    # Pattern on end of line
+    #======================================
+    cp "${SRC}" "${TMP}" || raise_error "Copy failed 3"
+    m_update_file "${TMP}" 'PATTERN_14' 2 'line_14="New Value"'
+    assert_is_not_different "${TMP}" "${EXP14}"
+    #======================================
+    # Pattern in middle of line
+    #======================================
+    cp "${SRC}" "${TMP}" || raise_error "Copy failed 4"
+    m_update_file "${TMP}" '13="' 2 'Line_13="New Value"'
+    assert_is_not_different "${TMP}" "${EXP13}"
+
+    #======================================
+    # Negative Tests
+    #======================================
+    mu_find_file common.funcs FUT
+    sed 's/\(m_fail .*\)/\1 || return 1/g' "${FUT}" > "${MU_TMP}/common.funcs"
+    import common.funcs
+    import m_fail_record_failure
+
+    #======================================
+    ## Rig test version of m_fail
+    #======================================
+    mu_get_exp_file Test-m_update_file FAIL
+    export M_FAIL="${FAIL}"
+
+    #======================================
+    # Invalid Arg Count
+    #======================================
+    cp "${SRC}" "${TMP}" || raise_error "Copy failed 4"
+    m_update_file "${TMP}" 2 'Line_13="New Value"' &&
+        raise_failure "Failed to trap invalid arg count"
+    #======================================
+    # Unwritable File
+    #======================================
+    chmod -w "${TMP}" || raise_error "Failed to chmod file 1"
+    m_update_file "${TMP}" '13="' 2 'Line_13="New Value"' &&
+        raise_failure "Failed to trap unwritable file"
+    chmod +w "${TMP}" || raise_error "Failed to chmod file 2"
+    #======================================
+    # Unreadable File
+    #======================================
+    chmod -r "${TMP}" || raise_error "Failed to chmod file 3"
+    m_update_file "${TMP}" '13="' 2 'Line_13="New Value"' &&
+        raise_failure "Failed to trap unreadable file"
+    chmod +r "${TMP}" || raise_error "Failed to chmod file 4"
+    #======================================
+    # Arg 3 invalid
+    #======================================
+    m_update_file "${TMP}" '13="' 'A' 'Line_13="New Value"' &&
+        raise_failure "Failed to trap non integer type"
+    #======================================
+    # Arg 4 not set
+    #======================================
+    m_update_file "${TMP}" '13="' 2 '' &&
+        raise_failure "Failed to trap arg[4] not set"
+    #======================================
+    # Supply pattern but specify use line No
+    #======================================
+    m_update_file "${TMP}" '13="' 1 'Line_13="New Value"' &&
+        raise_failure "Failed to trap pattern supplied instead of line No"
+    #======================================
+    # Supply line No but less than 1
+    #======================================
+    m_update_file "${TMP}" '0' 1 'Line_13="New Value"' &&
+        raise_failure "Failed to trap negative line No"
+    #======================================
+    # Supply pattern but no match
+    #======================================
+    m_update_file "${TMP}" 'DingDong' 2 'Line_13="New Value"' &&
+        raise_failure "Failed to trap "
+    #======================================
+    # Invalid search type range error
+    #======================================
+    m_update_file "${TMP}" '13="' 3 'Line_13="New Value"' &&
+        raise_failure "Failed to trap search type out of range"
+
+    #======================================
+    # Check we have the expected err msgs
+    #======================================
+    mu_find_file m_update_file.exp EXP
+    assert_is_not_different <(sed '/DingDong/d' "${EXP}") <(sed '/DingDong/d' "${FAIL}")
+
+    #======================================
+    # Error message conatins changing file name
+    #======================================
+    REFSTR="Call to m_fail with code (2) and msg (Error: No matches for pattern (DingDong) in file"
+    assert_left_match_for_string "${REFSTR}" "$(grep "DingDong" "${FAIL}")"
+
+    [[ -f "${MU_TMP}/common.funcs" ]] && rm -f "${MU_TMP}/common.funcs"
+end
