@@ -1,0 +1,8 @@
+Call to m_fail with code (1) and msg (Error: Usage. arg count. 3 expected (m_get_duration))
+Call to m_fail with code (1) and msg (Error: Usage. Arg[1]. Time string expected (m_get_duration))
+Call to m_fail with code (1) and msg (Error: Usage. Arg[2]. Time string expected (m_get_duration))
+Call to m_fail with code (1) and msg (Error: Negative time (m_get_duration))
+Call to m_fail with code (2) and msg (Error: Conversion failed for (1980/13/1 23:59:59) (m_get_epoch_seconds))
+Call to m_fail with code (2) and msg (Error: Conversion failed for (1980/13/1 23:59:59) (m_get_duration))
+Call to m_fail with code (2) and msg (Error: Conversion failed for (1980/1/41 00:00:00) (m_get_epoch_seconds))
+Call to m_fail with code (2) and msg (Error: Conversion failed for (1980/1/41 00:00:00) (m_get_duration))

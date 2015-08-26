@@ -1,0 +1,421 @@
+#! /bin/bash
+##############################################################
+##
+## Name         :   mu_test_time_funcs
+## Author       :   Bradley Atkins
+## Description  :   Tests for functions in time.funcs
+## Date         :   26/08/2015
+## Status       :   Reviewed    [n]
+##                  Tested      [n]
+##                  Released    [n]
+##############################################################
+
+#======================================
+# Return epoch milliseconds
+#======================================
+def Test-m_get_epoch_milliseconds
+    #======================================
+    # Requires and Imports
+    #======================================
+    require_file m_fail_raise_error
+    require_file time.funcs
+    import time.funcs
+
+    #======================================
+    #         Positive tests
+    #======================================
+    m_get_epoch_milliseconds TSTAMP
+    [[ "${TSTAMP}" =~ ^[[:digit:]]+$ ]] || raise_failure "Failed to retrieve current epoch milliseconds"
+    assert_equal_integer "${#TSTAMP}" 13
+
+    #======================================
+    #         Negative Tests
+    #======================================
+    mu_find_file time.funcs FUT
+    sed 's/\(m_fail .*\)/\1 || return 1/g' "${FUT}" > "${MU_TMP}/time.funcs"
+    import time.funcs
+    import m_fail_record_failure
+
+    #======================================
+    ## Rig test version of m_fail
+    #======================================
+    mu_get_exp_file Test-m_get_epoch_milliseconds FAIL
+    export M_FAIL="${FAIL}"
+    #======================================
+    # Arg count invalid
+    #======================================
+    m_get_epoch_milliseconds &&
+        raise_failure "Failed to trap invalid arg count 1"
+    
+    #======================================
+    # Invalid variable name
+    #======================================
+    m_get_epoch_milliseconds tstamp &&
+        raise_failure "Failed to trap invalid arg 1"
+
+    #======================================
+    # Check we have the correct fail msgs
+    #======================================
+    mu_find_file m_get_epoch_milliseconds.exp EXP
+    assert_is_not_different "${EXP}" "${FAIL}"
+
+    #======================================
+    # Clean up
+    #======================================
+    [[ -f "${MU_TMP}/time.funcs" ]] && rm -f "${MU_TMP}/time.funcs"
+end
+#======================================
+# Return epoch seconds
+#======================================
+def Test-m_get_epoch_seconds
+    #======================================
+    # Requires and Imports
+    #======================================
+    require_file m_fail_raise_error
+    require_file time.funcs
+    import time.funcs
+
+    #======================================
+    #         Positive tests
+    #======================================
+
+    #======================================
+    # No time string
+    #======================================
+    m_get_epoch_seconds TSTAMP
+    [[ "${TSTAMP}" =~ ^[[:digit:]]+$ ]] || raise_failure "Failed to get current epoch seconds"
+    #======================================
+    # "Jan 1, 1980 00:00:01"
+    #======================================
+    m_get_epoch_seconds "Jan 1, 1980 00:00:01" TSTAMP
+    assert_equal_integer "${TSTAMP}" 315532801
+    #======================================
+    # "January 1, 1980 23:59:59"
+    #======================================
+    m_get_epoch_seconds "January 1, 1980 23:59:59" TSTAMP
+    assert_equal_integer "${TSTAMP}" 315619199
+    #======================================
+    # "January 1 1980 23:59:59"
+    #======================================
+    m_get_epoch_seconds "January 1 1980 23:59:59" TSTAMP
+    assert_equal_integer "${TSTAMP}" 315619199
+    #======================================
+    # "1980/1/1 00:00:01"
+    #======================================
+    m_get_epoch_seconds "1980/1/1 00:00:01" TSTAMP
+    assert_equal_integer "${TSTAMP}" 315532801
+
+    #======================================
+    #         Negative Tests
+    #======================================
+    mu_find_file time.funcs FUT
+    sed 's/\(m_fail .*\)/\1 || return 1/g' "${FUT}" > "${MU_TMP}/time.funcs"
+    import time.funcs
+    import m_fail_record_failure
+
+    #======================================
+    ## Rig test version of m_fail
+    #======================================
+    mu_get_exp_file Test-m_get_epoch_seconds FAIL
+    export M_FAIL="${FAIL}"
+
+    #======================================
+    # Invalid Arg Count
+    #======================================
+    m_get_epoch_seconds &&
+        raise_failure "Failed to trap invalid arg count 1"
+    #======================================
+    # Invalid Arg Count
+    #======================================
+    m_get_epoch_seconds "1980/1/1 00:00:01" TSTAMP WIBBLE &&
+        raise_failure "Failed to trap invalid arg count 2"
+    #======================================
+    # Empty arg[1]
+    #======================================
+    m_get_epoch_seconds "" TSTAMP &&
+        raise_failure "Failed to trap invalid arg 1"
+    
+    #======================================
+    # Empty arg 2
+    #======================================
+    m_get_epoch_seconds "January 1 1980 23:59:59" "" &&
+        raise_failure "Failed to trap invalid arg 2"
+
+    #======================================
+    # Invalid date string
+    #======================================
+    m_get_epoch_seconds "Banuary 1 1980 23:59:59" TSTAMP &&
+        raise_failure "Failed to trap invalid tine string" 
+
+    #======================================
+    # Check we have the correct fail msgs
+    #======================================
+    mu_find_file m_get_epoch_seconds.exp EXP
+    assert_is_not_different "${EXP}" "${FAIL}"
+
+    #======================================
+    # Clean up
+    #======================================
+    [[ -f "${MU_TMP}/time.funcs" ]] && rm -f "${MU_TMP}/time.funcs"
+end
+#======================================
+# Function converts seconds to hms
+#======================================
+def Test-m_get_hms
+    #======================================
+    # Requires and Imports
+    #======================================
+    require_file m_fail_raise_error
+    require_file time.funcs
+    import time.funcs
+
+    #======================================
+    #         Positive tests
+    #======================================
+
+    #======================================
+    # Seconds boundary
+    #======================================
+    m_get_hms 20119 TSTAMP 
+    assert_equal_string "${TSTAMP}" "5h:35m:19s"
+    #======================================
+    # Minutes boundary
+    #======================================
+    m_get_hms 18019 TSTAMP
+    assert_equal_string "${TSTAMP}" "5h:0m:19s"
+    #======================================
+    # Hours boundary
+    #======================================
+    m_get_hms 17999 TSTAMP
+    assert_equal_string "${TSTAMP}" "4h:59m:59s"
+
+    #======================================
+    #         Negative Tests
+    #======================================
+    mu_find_file time.funcs FUT
+    sed 's/\(m_fail .*\)/\1 || return 1/g' "${FUT}" > "${MU_TMP}/time.funcs"
+    import time.funcs
+    import m_fail_record_failure
+
+    #======================================
+    ## Rig test version of m_fail
+    #======================================
+    mu_get_exp_file Test-m_get_hms FAIL
+    export M_FAIL="${FAIL}"
+
+    #======================================
+    # Invalid Arg Count
+    #======================================
+    m_get_hms TSTAMP &&
+        raise_failure "Failed to trap invalid arg count"
+    #======================================
+    # Invalid Seconds
+    #======================================
+    m_get_hms "half past five" TSTAMP &&
+        raise_failure "Failed to trap invalid epoch seconds"
+    #======================================
+    # Empty variable name
+    #======================================
+    m_get_hms 18019 "" &&
+        raise_failure "Failed to trap invalid variable name"
+
+    #======================================
+    # Check all our error messages as expected
+    #======================================
+    mu_find_file m_get_hms.exp EXP
+    assert_is_not_different "${EXP}" "${FAIL}"
+
+    #======================================
+    # Clean up
+    #======================================
+    [[ -f "${MU_TMP}/time.funcs" ]] && rm -f "${MU_TMP}/time.funcs"
+end
+
+#======================================
+# Convert epoch seconds to date stamp
+#======================================
+def Test-m_get_date_from_epoch
+    #======================================
+    # Requires and Imports
+    #======================================
+    require_file m_fail_raise_error
+    require_file time.funcs
+    import time.funcs
+
+    #======================================
+    #         Positive tests
+    #======================================
+
+    #======================================
+    # D M Y
+    #======================================
+    m_get_date_from_epoch "%d/%m/%Y" "@2147483647" TSTAMP
+    assert_equal_string "${TSTAMP}" "19/01/2038"
+    #======================================
+    # D M Y H M S
+    #======================================
+    m_get_date_from_epoch "%d/%m/%Y %H:%M:%S" "@2147483647" TSTAMP
+    assert_equal_string "${TSTAMP}" "19/01/2038 03:14:07"
+    #======================================
+    # D M y   
+    #======================================
+    m_get_date_from_epoch "%d/%m/%y" "@2147483647" TSTAMP
+    assert_equal_string "${TSTAMP}" "19/01/38"
+
+    #======================================
+    #         Negative Tests
+    #======================================
+    mu_find_file time.funcs FUT
+    sed 's/\(m_fail .*\)/\1 || return 1/g' "${FUT}" > "${MU_TMP}/time.funcs"
+    import time.funcs
+    import m_fail_record_failure
+
+    #======================================
+    ## Rig test version of m_fail
+    #======================================
+    mu_get_exp_file Test-m_get_date_from_epoch FAIL
+    export M_FAIL="${FAIL}"
+
+    #======================================
+    # Invalid Arg Count
+    #======================================
+    m_get_date_from_epoch "%d/%m/%y" &&
+        raise_failure "Failed to trap invalid arg count"
+    #======================================
+    # Empty arg 1
+    #======================================
+    m_get_date_from_epoch "" "@2147483647" TSTAMP &&
+        raise_failure "Failed to trap invalid arg 1"
+    #======================================
+    # Format of @seconds arg
+    #======================================
+    m_get_date_from_epoch "%d/%m/%y" "@@2147483647" TSTAMP &&
+        raise_failure "Failed to trap invalid arg 2"
+    #======================================
+    # Empty arg 2
+    #======================================
+    m_get_date_from_epoch "%d/%m/%y" "" TSTAMP &&
+        raise_failure "Failed to trap empty arg 2"
+    #======================================
+    # Invalid arg 2
+    #======================================
+    m_get_date_from_epoch "%d/%m/%y" "@" TSTAMP &&
+        raise_failure "Failed to trap invalid arg 2"
+    #======================================
+    # Invalid arg 3
+    #======================================
+    m_get_date_from_epoch "%d/%m/%y" "@2147483647" "" &&
+        raise_failure "Failed to trap invalid arg 3"
+    #======================================
+    # Check we have the correct fail msgs
+    #======================================
+    mu_find_file m_get_date_from_epoch.exp EXP
+    assert_is_not_different "${EXP}" "${FAIL}"
+
+    #======================================
+    # Clean up
+    #======================================
+    [[ -f "${MU_TMP}/time.funcs" ]] && rm -f "${MU_TMP}/time.funcs"
+end
+#======================================
+# Calculate a duration from 2 dates
+#======================================
+def Test-m_get_duration
+    #======================================
+    # Requires and Imports
+    #======================================
+    require_file m_fail_raise_error
+    require_file time.funcs
+    import time.funcs
+
+    #======================================
+    #         Positive tests
+    #======================================
+
+    #======================================
+    # 1 min 
+    #======================================
+    m_get_duration "Jan 1, 1980 00:00:01" "Jan 1, 1980 00:01:01" DURATION
+    assert_equal_string "${DURATION}" "0h:1m:0s"
+    #======================================
+    # 59 mins 59 secs
+    #======================================
+    m_get_duration "Jan 1, 1980 00:00:00" "Jan 1, 1980 00:59:59" DURATION
+    assert_equal_string "${DURATION}" "0h:59m:59s"
+    #======================================
+    # 24 hrs
+    #======================================
+    m_get_duration "Jan 1, 1980 00:00:01" "Jan 2, 1980 00:00:01" DURATION
+    assert_equal_string "${DURATION}" "24h:0m:0s"
+    #======================================
+    # Different format, zero duration
+    #======================================
+    m_get_duration "January 1 1980 23:59:59" "January 1 1980 23:59:59" DURATION
+    assert_equal_string "${DURATION}" "0h:0m:0s"
+    #======================================
+    # Different format 
+    #======================================
+    m_get_duration "1980/1/1 00:00:01" "1980/1/1 23:59:59" DURATION
+    assert_equal_string "${DURATION}" "23h:59m:58s"
+    #======================================
+    # Cross boundary for millenium
+    #======================================
+    m_get_duration "1999/12/31 23:59:59" "2000/1/1 00:00:00" DURATION
+    assert_equal_string "${DURATION}" "0h:0m:1s"
+
+    #======================================
+    #         Negative Tests
+    #======================================
+    mu_find_file time.funcs FUT
+    sed 's/\(m_fail .*\)/\1 || return 1/g' "${FUT}" > "${MU_TMP}/time.funcs"
+    import time.funcs
+    import m_fail_record_failure
+
+    #======================================
+    ## Rig test version of m_fail
+    #======================================
+    mu_get_exp_file Test-m_get_duration FAIL
+    export M_FAIL="${FAIL}"
+
+    #======================================
+    # Invalid Arg Count
+    #======================================
+    m_get_duration "1980/1/1 00:00:01" "1980/1/1 23:59:59" &&
+        raise_failure "Failed to trap invalid arg count"
+    #======================================
+    # Empty arg[1]
+    #======================================
+    m_get_duration "" "1980/1/1 23:59:59" DURATION &&
+        raise_failure "Failed to trap invalid arg 1"
+    #======================================
+    # Empty arg[2]
+    #======================================
+    m_get_duration "1980/1/1 00:00:01" "" DURATION &&
+        raise_failure "Failed to trap invalid arg 2"
+    #======================================
+    # Negative range
+    #======================================
+    m_get_duration "1980/2/1 00:00:01" "1980/1/1 23:59:59" DURATION &&
+        raise_failure "Failed to trap negative range"
+    #======================================
+    # Invalid time string
+    #======================================
+    m_get_duration "1980/1/1 00:00:01" "1980/13/1 23:59:59" DURATION &&
+        raise_failure "Failed to trap invalid month"
+    #======================================
+    # Invalid time string
+    #======================================
+    m_get_duration "1980/1/41 00:00:00" "1980/1/1 23:59:59" DURATION &&
+        raise_failure "Failed to trap invalid day"
+
+    #======================================
+    # Check we have the correct fail msgs
+    #======================================
+    mu_find_file m_get_duration.exp EXP
+    assert_is_not_different "${EXP}" "${FAIL}"
+
+    #======================================
+    # Clean up
+    #======================================
+    [[ -f "${MU_TMP}/time.funcs" ]] && rm -f "${MU_TMP}/time.funcs"
+end

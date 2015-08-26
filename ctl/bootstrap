@@ -267,7 +267,8 @@ mu_create_test_files()
         # Prepare and sanity check test file
         #======================================
         mu_get_tmp_file "${FUNCNAME}" TESTSUITE
-        mu_clean_file "${TMPFILE1}" "${TESTSUITE}"
+        #mu_clean_file "${TMPFILE1}" "${TESTSUITE}"
+        cp "${TMPFILE1}" "${TESTSUITE}"
         mu_check_test_suite_format "${TESTSUITE}"
 
         #======================================

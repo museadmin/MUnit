@@ -1,0 +1,3 @@
+Call to m_fail with code (1) and msg (Error: Usage. Arg count. 2 expected (m_get_hms))
+Call to m_fail with code (1) and msg (Error: Usage. Arg[1]. Integer expected (m_get_hms))
+Call to m_fail with code (2) and msg (Error: Usage. Arg[2]. Variable name expected (m_get_hms))
